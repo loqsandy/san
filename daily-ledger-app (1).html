@@ -1,0 +1,1384 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  #ledger-root {
+    --bg: #FDFBF6;
+    --paper: #FFFFFF;
+    --ink: #2B241D;
+    --ink-soft: #6E6155;
+    --line: #E7DFD2;
+    --terracotta: #BE6A45;
+    --terracotta-deep: #A2532F;
+    --terracotta-wash: #F5E4D8;
+    --gold: #C79A4B;
+    --gold-wash: #F3E7CB;
+    --shadow: rgba(43,36,29,0.08);
+    --overlay: rgba(27,23,18,0.42);
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background .25s ease, color .25s ease;
+  }
+  #ledger-root[data-theme="dark"] {
+    --bg: #1B1712;
+    --paper: #241F19;
+    --ink: #F3ECE0;
+    --ink-soft: #A99C8B;
+    --line: #3B3229;
+    --terracotta: #E39567;
+    --terracotta-deep: #F0AC80;
+    --terracotta-wash: #3A2A1F;
+    --gold: #DCB271;
+    --gold-wash: #362C1B;
+    --shadow: rgba(0,0,0,0.35);
+    --overlay: rgba(0,0,0,0.55);
+  }
+  #ledger-root * { box-sizing: border-box; }
+
+  /* ---------- App shell ---------- */
+  #ledger-root .phone {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 540px) {
+    #ledger-root { padding: 28px 12px; align-items: flex-start; justify-content: center; }
+    #ledger-root .phone {
+      min-height: min(880px, 92vh);
+      height: min(880px, 92vh);
+      border-radius: 34px;
+      box-shadow: 0 18px 50px var(--shadow), 0 0 0 1px var(--line);
+      margin: 0 auto;
+    }
+  }
+
+  #ledger-root .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 18px 14px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+  #ledger-root .icon-btn {
+    border: none;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  #ledger-root .icon-btn:hover { background: var(--terracotta-wash); }
+  #ledger-root .icon-btn svg { width: 21px; height: 21px; }
+  #ledger-root .topbar-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+    flex: 1;
+  }
+  #ledger-root .topbar-sub { font-size: 11px; color: var(--ink-soft); margin-top: -1px; }
+  #ledger-root .topbar-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--terracotta-wash);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  #ledger-root .page {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 18px 90px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #ledger-root .page::-webkit-scrollbar { width: 0; }
+
+  /* ---------- Bottom nav ---------- */
+  #ledger-root .bottom-nav {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+    flex-shrink: 0;
+  }
+  #ledger-root .nav-item {
+    flex: 1;
+    border: none;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 2px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    border-radius: 12px;
+  }
+  #ledger-root .nav-item svg { width: 21px; height: 21px; }
+  #ledger-root .nav-item span { font-size: 10.5px; font-weight: 500; letter-spacing: 0.01em; }
+  #ledger-root .nav-item.active { color: var(--terracotta-deep); }
+
+  /* ---------- Floating add button ---------- */
+  #ledger-root .fab {
+    position: absolute;
+    right: 18px;
+    bottom: 78px;
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 20px var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: transform .15s ease, background .15s ease, opacity .15s ease;
+  }
+  #ledger-root .fab svg { width: 24px; height: 24px; }
+  #ledger-root .fab:hover { background: var(--terracotta-deep); transform: scale(1.05); }
+  #ledger-root .fab.hidden { opacity: 0; pointer-events: none; transform: scale(.8); }
+
+  /* ---------- Add entry page ---------- */
+  #ledger-root .add-page-field { margin-bottom: 18px; }
+  #ledger-root .add-page-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 6px; }
+  #ledger-root .add-page-save {
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: var(--terracotta);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  #ledger-root .add-page-save:hover { background: var(--terracotta-deep); }
+  #ledger-root .add-page-save:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+  #ledger-root .add-page-error { font-size: 12.5px; color: #C0503E; margin-top: -8px; margin-bottom: 14px; min-height: 15px; }
+  #ledger-root .quick-date-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  #ledger-root .quick-date-opt {
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  #ledger-root .quick-date-opt.selected { border-color: var(--terracotta-deep); color: var(--terracotta-deep); background: var(--terracotta-wash); }
+
+  /* ---------- Drawer ---------- */
+  #ledger-root .drawer-overlay {
+    position: absolute; inset: 0;
+    background: var(--overlay);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease;
+    z-index: 10;
+  }
+  #ledger-root .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+  #ledger-root .drawer {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 78%;
+    max-width: 300px;
+    background: var(--paper);
+    box-shadow: 6px 0 24px var(--shadow);
+    transform: translateX(-105%);
+    transition: transform .26s cubic-bezier(.32,.72,.35,1);
+    z-index: 11;
+    display: flex;
+    flex-direction: column;
+    padding: 22px 16px 16px;
+  }
+  #ledger-root .drawer.open { transform: translateX(0); }
+
+  #ledger-root .drawer-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+  }
+  #ledger-root .drawer-avatar {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--terracotta-wash);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+  }
+  #ledger-root .drawer-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; }
+  #ledger-root .drawer-view-profile { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+
+  #ledger-root .drawer-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  #ledger-root .drawer-item.logout { color: #C0503E; margin-top: 4px; }
+  #ledger-root .drawer-item.logout svg { color: #C0503E; }
+  #ledger-root .drawer-item.logout:hover { background: rgba(192,80,62,0.1); }
+  #ledger-root .drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 11px 10px;
+    border-radius: 10px;
+    border: none;
+    background: none;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+  }
+  #ledger-root .drawer-item svg { width: 19px; height: 19px; color: var(--ink-soft); flex-shrink: 0; }
+  #ledger-root .drawer-item:hover { background: var(--terracotta-wash); }
+  #ledger-root .drawer-item.active { background: var(--terracotta-wash); color: var(--terracotta-deep); }
+  #ledger-root .drawer-item.active svg { color: var(--terracotta-deep); }
+
+  #ledger-root .drawer-footer {
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #ledger-root .drawer-footer-label { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+  #ledger-root .drawer-footer-label svg { width: 18px; height: 18px; color: var(--ink-soft); }
+
+  #ledger-root .theme-switch {
+    width: 46px; height: 26px;
+    border-radius: 20px;
+    background: var(--line);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  #ledger-root .theme-switch .thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    transition: left .2s cubic-bezier(.32,.72,.35,1), background .2s ease;
+  }
+  #ledger-root .theme-switch .thumb svg { width: 12px; height: 12px; color: var(--terracotta-deep); }
+  #ledger-root[data-theme="dark"] .theme-switch { background: var(--terracotta-wash); }
+  #ledger-root[data-theme="dark"] .theme-switch .thumb { left: 23px; background: var(--terracotta-deep); }
+  #ledger-root[data-theme="dark"] .theme-switch .thumb svg { color: var(--bg); }
+
+  /* ---------- Shared card / calendar (unchanged behaviour, restyled) ---------- */
+  #ledger-root .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  #ledger-root .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  #ledger-root .cal-month { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
+  #ledger-root .nav-btn {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #ledger-root .nav-btn svg { width: 16px; height: 16px; }
+  #ledger-root .nav-btn:hover { border-color: var(--terracotta); color: var(--terracotta-deep); }
+
+  #ledger-root .month-total { font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+  #ledger-root .month-total b { color: var(--terracotta-deep); font-variant-numeric: tabular-nums; }
+
+  #ledger-root .grid-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+  #ledger-root .dow { text-align: center; font-size: 10.5px; color: var(--ink-soft); letter-spacing: 0.04em; text-transform: uppercase; padding-bottom: 4px; }
+  #ledger-root .grid-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  #ledger-root .day {
+    aspect-ratio: 1;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 2px;
+    position: relative;
+    transition: border-color .12s ease, background .12s ease;
+  }
+  #ledger-root .day:hover { border-color: var(--terracotta); }
+  #ledger-root .day.empty { visibility: hidden; cursor: default; }
+  #ledger-root .day.selected { border-color: var(--terracotta-deep); border-width: 2px; }
+  #ledger-root .day.today .day-num { color: var(--terracotta-deep); font-weight: 700; }
+  #ledger-root .day-num { font-size: 12px; font-weight: 500; }
+  #ledger-root .day-amt {
+    font-size: 8.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--terracotta-deep);
+    background: var(--terracotta-wash);
+    padding: 1px 4px;
+    border-radius: 20px;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+
+  #ledger-root .day-panel { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+  #ledger-root .day-panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
+  #ledger-root .day-panel-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; }
+  #ledger-root .day-panel-total { font-size: 13px; color: var(--terracotta-deep); font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+
+  #ledger-root .entry-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line); gap: 10px; }
+  #ledger-root .entry-row:last-of-type { border-bottom: none; }
+  #ledger-root .entry-name { font-size: 14px; font-weight: 500; }
+  #ledger-root .entry-amt { font-size: 14px; font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+  #ledger-root .entry-del { border: none; background: none; color: var(--ink-soft); cursor: pointer; padding: 4px; display: flex; }
+  #ledger-root .entry-del svg { width: 15px; height: 15px; }
+  #ledger-root .entry-del:hover { color: var(--terracotta-deep); }
+  #ledger-root .empty-note { color: var(--ink-soft); font-size: 13px; font-style: italic; padding: 6px 0 14px; }
+
+  #ledger-root .add-form { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  #ledger-root .add-form .row { display: flex; gap: 10px; }
+  #ledger-root input, #ledger-root select {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    width: 100%;
+  }
+  #ledger-root input:focus, #ledger-root select:focus { outline: none; border-color: var(--terracotta); background: var(--paper); }
+  #ledger-root input.amt { max-width: 130px; font-variant-numeric: tabular-nums; }
+  #ledger-root .add-btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--terracotta);
+    color: #fff;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  #ledger-root .add-btn:hover { background: var(--terracotta-deep); }
+  #ledger-root .add-btn:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+
+  /* ---------- Spending log page ---------- */
+  #ledger-root .page-heading { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; margin: 0 0 3px; }
+  #ledger-root .page-sub { color: var(--ink-soft); font-size: 13px; margin: 0 0 18px; }
+  #ledger-root .search-row { position: relative; margin-bottom: 18px; }
+  #ledger-root .search-row svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--ink-soft); }
+  #ledger-root .search-row input { padding-left: 36px; }
+  #ledger-root .month-group { margin-bottom: 20px; }
+  #ledger-root .month-group-title { font-family: 'Fraunces', serif; font-size: 14.5px; font-weight: 600; color: var(--terracotta-deep); margin-bottom: 6px; }
+  #ledger-root .month-group-total { color: var(--ink-soft); font-weight: 400; font-size: 12.5px; }
+  #ledger-root .all-entry { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); gap: 12px; }
+  #ledger-root .all-entry-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  #ledger-root .all-entry-name { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #ledger-root .all-entry-date { font-size: 11.5px; color: var(--ink-soft); }
+  #ledger-root .all-entry-amt { font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---------- Tracker page ---------- */
+  #ledger-root .stat-row { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+  #ledger-root .stat-box { flex: 1; min-width: 100px; background: var(--terracotta-wash); border-radius: 10px; padding: 13px 14px; }
+  #ledger-root .stat-box.gold { background: var(--gold-wash); }
+  #ledger-root .stat-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 4px; }
+  #ledger-root .stat-value { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  #ledger-root .section-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; margin: 20px 0 12px; }
+  #ledger-root .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  #ledger-root .bar-label { width: 70px; font-size: 11.5px; color: var(--ink-soft); text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  #ledger-root .bar-track { flex: 1; background: var(--terracotta-wash); border-radius: 6px; height: 15px; overflow: hidden; }
+  #ledger-root .bar-fill { height: 100%; background: var(--terracotta); border-radius: 6px; }
+  #ledger-root .bar-amt { width: 68px; font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+
+  #ledger-root .top-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  #ledger-root .top-item .rank { color: var(--terracotta-deep); font-weight: 600; margin-right: 8px; }
+
+  #ledger-root .empty-page { text-align: center; padding: 50px 10px; color: var(--ink-soft); }
+  #ledger-root .empty-page .em-title { font-family: 'Fraunces', serif; font-size: 17px; color: var(--ink); margin-bottom: 6px; }
+  #ledger-root .empty-page svg { width: 34px; height: 34px; color: var(--ink-soft); margin-bottom: 12px; opacity: .6; }
+
+  /* ---------- Login screen ---------- */
+  #ledger-root .login-screen {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    padding: 0 26px;
+  }
+  #ledger-root .login-screen.hidden { display: none; }
+  #ledger-root .login-hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
+  }
+  #ledger-root .login-mark {
+    width: 64px; height: 64px;
+    border-radius: 20px;
+    background: var(--terracotta-wash);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    margin-bottom: 10px;
+  }
+  #ledger-root .login-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; margin: 0; }
+  #ledger-root .login-sub { color: var(--ink-soft); font-size: 14px; max-width: 260px; line-height: 1.5; }
+
+  #ledger-root .login-actions { padding-bottom: 40px; display: flex; flex-direction: column; gap: 12px; }
+  #ledger-root .google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+  }
+  #ledger-root .google-btn:hover { border-color: var(--terracotta); box-shadow: 0 2px 8px var(--shadow); }
+  #ledger-root .google-btn svg { width: 19px; height: 19px; flex-shrink: 0; }
+  #ledger-root .login-note { text-align: center; font-size: 11.5px; color: var(--ink-soft); line-height: 1.5; }
+  #ledger-root .login-note a { color: var(--terracotta-deep); text-decoration: none; }
+
+  #ledger-root .account-picker { flex: 1; display: flex; flex-direction: column; padding-top: 30px; }
+  #ledger-root .account-picker-head { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  #ledger-root .account-picker-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
+  #ledger-root .account-picker .add-page-field { margin-bottom: 16px; }
+  #ledger-root .account-avatar-preview {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--gold));
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0 auto 18px;
+  }
+
+  /* ---------- Profile page ---------- */
+  #ledger-root .profile-head { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 8px 0 26px; }
+  #ledger-root .profile-avatar-big {
+    width: 74px; height: 74px;
+    border-radius: 50%;
+    background: var(--terracotta-wash);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+  #ledger-root .avatar-hint { font-size: 11.5px; color: var(--ink-soft); }
+  #ledger-root .emoji-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  #ledger-root .emoji-opt {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #ledger-root .emoji-opt.selected { border-color: var(--terracotta-deep); border-width: 2px; }
+
+  #ledger-root .field-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin: 18px 0 6px; }
+  #ledger-root .currency-row { display: flex; gap: 8px; }
+  #ledger-root .currency-opt {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  #ledger-root .currency-opt.selected { border-color: var(--terracotta-deep); color: var(--terracotta-deep); background: var(--terracotta-wash); }
+
+  #ledger-root .profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+  #ledger-root .danger-btn {
+    margin-top: 30px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: none;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  #ledger-root .danger-btn:hover { border-color: #C0503E; color: #C0503E; }
+  #ledger-root .save-hint { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; }
+</style>
+
+<div id="ledger-root" data-theme="light">
+
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-profile" id="drawer-profile-btn">
+      <div class="drawer-avatar" id="drawer-avatar">🧾</div>
+      <div>
+        <div class="drawer-name" id="drawer-name">Your Ledger</div>
+        <div class="drawer-view-profile" id="drawer-subtitle">View profile ›</div>
+      </div>
+    </div>
+    <nav class="drawer-nav">
+      <button class="drawer-item" data-goto="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </button>
+      <button class="drawer-item" data-goto="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+        Calendar
+      </button>
+      <button class="drawer-item" data-goto="tracker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        Expense Tracker
+      </button>
+      <button class="drawer-item logout" id="logout-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        Log out
+      </button>
+    </nav>
+    <div class="drawer-footer">
+      <div class="drawer-footer-label">
+        <svg id="theme-icon-label" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+        <span>Theme</span>
+      </div>
+      <button class="theme-switch" id="theme-switch">
+        <span class="thumb" id="theme-thumb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+        </span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="phone">
+    <div class="login-screen hidden" id="login-screen">
+      <div id="login-step-welcome">
+        <div class="login-hero">
+          <div class="login-mark">🧾</div>
+          <h1 class="login-title">Daily Ledger</h1>
+          <p class="login-sub">A quiet place to note what the money went to. Sign in to keep your ledger with you.</p>
+        </div>
+        <div class="login-actions">
+          <button class="google-btn" id="google-signin-btn">
+            <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continue with Google
+          </button>
+          <div class="login-note">By continuing you agree this is a demo sign-in — see the note below the app for what a production version would need.</div>
+        </div>
+      </div>
+
+      <div id="login-step-picker" style="display:none;">
+        <div class="account-picker">
+          <div class="account-picker-head">
+            <button class="icon-btn" id="picker-back-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="account-picker-title">Choose an account</div>
+          </div>
+          <div class="account-avatar-preview" id="account-avatar-preview">?</div>
+          <div class="add-page-field">
+            <div class="add-page-label">Name</div>
+            <input type="text" id="picker-name" placeholder="Your name" maxlength="40" />
+          </div>
+          <div class="add-page-field">
+            <div class="add-page-label">Google email</div>
+            <input type="email" id="picker-email" placeholder="you@gmail.com" />
+          </div>
+          <div class="add-page-error" id="picker-error"></div>
+          <button class="add-page-save" id="picker-continue-btn" disabled>Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <header class="topbar">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu">
+        <span id="menu-btn-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </span>
+      </button>
+      <div>
+        <div class="topbar-title" id="topbar-title">Calendar</div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="topbar-avatar" id="topbar-avatar">🧾</div>
+    </header>
+
+    <main class="page" id="page-container">
+      <div style="text-align:center; color:var(--ink-soft); padding: 30px 0;">Loading your ledger…</div>
+    </main>
+
+    <button class="fab" id="fab-add" aria-label="Add entry">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="nav-item" data-page="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+        <span>Calendar</span>
+      </button>
+      <button class="nav-item" data-page="log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5M8 12h8M8 16h5"/></svg>
+        <span>Spending Log</span>
+      </button>
+      <button class="nav-item" data-page="tracker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        <span>Tracker</span>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<script>
+(function () {
+  const root = document.getElementById('ledger-root');
+  const pageContainer = document.getElementById('page-container');
+  const topbarTitle = document.getElementById('topbar-title');
+  const navItems = root.querySelectorAll('.nav-item');
+  const drawer = document.getElementById('drawer');
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  const menuBtn = document.getElementById('menu-btn');
+  const menuBtnIcon = document.getElementById('menu-btn-icon');
+  const fabAdd = document.getElementById('fab-add');
+  const bottomNav = document.getElementById('bottom-nav');
+
+  const ICON_HAMBURGER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+  const ICON_BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+
+  const DOW = ['S','M','T','W','T','F','S'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const EMOJIS = ['🧾','💰','🪙','📒','🏦','☕','🛍️','🌿'];
+  const CURRENCIES = ['₹','$','€','£'];
+
+  let entries = [];             // {id, date:'YYYY-MM-DD', amount:number, name:string}
+  let profile = { name: 'Your Ledger', emoji: '🧾', currency: '₹' };
+  let theme = 'light';
+  let session = null;           // {name, email} once "signed in"
+
+  const loginScreen = document.getElementById('login-screen');
+  const stepWelcome = document.getElementById('login-step-welcome');
+  const stepPicker = document.getElementById('login-step-picker');
+  const phoneChrome = root.querySelectorAll('.topbar, .page, .bottom-nav, .fab');
+
+  let currentPage = 'calendar'; // calendar | log | tracker | profile | add
+  let returnPage = 'calendar';  // page to go back to after the Add Entry page
+  let viewYear, viewMonth;      // month being viewed on calendar/tracker
+  let selectedDate = null;      // 'YYYY-MM-DD'
+  let searchTerm = '';
+  let addDraftDate = null;      // date pre-selected when opening the Add Entry page
+
+  const today = new Date();
+  viewYear = today.getFullYear();
+  viewMonth = today.getMonth();
+  selectedDate = fmtDate(today);
+
+  function fmtDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function fmtMoney(n) {
+    return profile.currency + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  }
+  function uid() {
+    return 'e' + Date.now() + Math.random().toString(36).slice(2,8);
+  }
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ---------- Storage ----------
+  async function loadAll() {
+    try {
+      const res = await window.storage.get('ledger-entries', false);
+      entries = res && res.value ? JSON.parse(res.value) : [];
+    } catch (e) { entries = []; }
+
+    try {
+      const res = await window.storage.get('ledger-profile', false);
+      if (res && res.value) profile = Object.assign(profile, JSON.parse(res.value));
+    } catch (e) { /* keep defaults */ }
+
+    try {
+      const res = await window.storage.get('ledger-theme', false);
+      if (res && res.value) theme = res.value;
+    } catch (e) { /* keep default */ }
+
+    try {
+      const res = await window.storage.get('ledger-session', false);
+      if (res && res.value) session = JSON.parse(res.value);
+    } catch (e) { session = null; }
+
+    applyTheme(theme, { skipSave: true });
+
+    if (session) {
+      showApp();
+    } else {
+      showLogin();
+    }
+  }
+  async function saveEntries() {
+    try { await window.storage.set('ledger-entries', JSON.stringify(entries), false); }
+    catch (e) { console.error('Save failed', e); }
+  }
+  async function saveProfile() {
+    try { await window.storage.set('ledger-profile', JSON.stringify(profile), false); }
+    catch (e) { console.error('Save failed', e); }
+  }
+  async function saveTheme() {
+    try { await window.storage.set('ledger-theme', theme, false); }
+    catch (e) { console.error('Save failed', e); }
+  }
+  async function saveSession() {
+    try { await window.storage.set('ledger-session', JSON.stringify(session), false); }
+    catch (e) { console.error('Save failed', e); }
+  }
+  async function clearSession() {
+    try { await window.storage.delete('ledger-session', false); }
+    catch (e) { /* nothing stored yet, fine */ }
+  }
+
+  // ---------- Login / logout screens ----------
+  function showLogin() {
+    loginScreen.classList.remove('hidden');
+    phoneChrome.forEach(el => { el.style.visibility = 'hidden'; });
+    stepWelcome.style.display = '';
+    stepPicker.style.display = 'none';
+    document.getElementById('picker-name').value = '';
+    document.getElementById('picker-email').value = '';
+    document.getElementById('picker-error').textContent = '';
+  }
+  function showApp() {
+    loginScreen.classList.add('hidden');
+    phoneChrome.forEach(el => { el.style.visibility = ''; });
+    renderShellChrome();
+    render();
+  }
+
+  document.getElementById('google-signin-btn').addEventListener('click', () => {
+    stepWelcome.style.display = 'none';
+    stepPicker.style.display = '';
+    document.getElementById('picker-name').focus();
+  });
+  document.getElementById('picker-back-btn').addEventListener('click', () => {
+    stepPicker.style.display = 'none';
+    stepWelcome.style.display = '';
+  });
+
+  const pickerName = document.getElementById('picker-name');
+  const pickerEmail = document.getElementById('picker-email');
+  const pickerContinueBtn = document.getElementById('picker-continue-btn');
+  const pickerError = document.getElementById('picker-error');
+  const accountAvatarPreview = document.getElementById('account-avatar-preview');
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function refreshPicker() {
+    const initial = pickerName.value.trim().charAt(0).toUpperCase();
+    accountAvatarPreview.textContent = initial || '?';
+    pickerContinueBtn.disabled = !(pickerName.value.trim() && emailPattern.test(pickerEmail.value.trim()));
+    pickerError.textContent = '';
+  }
+  pickerName.addEventListener('input', refreshPicker);
+  pickerEmail.addEventListener('input', refreshPicker);
+  [pickerName, pickerEmail].forEach(inp => inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !pickerContinueBtn.disabled) pickerContinueBtn.click();
+  }));
+
+  pickerContinueBtn.addEventListener('click', async () => {
+    const name = pickerName.value.trim();
+    const email = pickerEmail.value.trim();
+    if (!name || !emailPattern.test(email)) {
+      pickerError.textContent = 'Enter a name and a valid email to continue.';
+      return;
+    }
+    session = { name, email };
+    await saveSession();
+    if (!profile.name || profile.name === 'Your Ledger') {
+      profile.name = name;
+      await saveProfile();
+    }
+    currentPage = 'calendar';
+    showApp();
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    if (!confirm('Log out of Daily Ledger? Your entries stay saved for next time you sign in.')) return;
+    closeDrawer();
+    await clearSession();
+    session = null;
+    showLogin();
+  });
+
+  function applyTheme(t, opts) {
+    theme = t;
+    root.setAttribute('data-theme', t);
+    if (!(opts && opts.skipSave)) saveTheme();
+  }
+
+  // ---------- Derived helpers ----------
+  function entriesForDate(dateStr) {
+    return entries.filter(e => e.date === dateStr).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  }
+  function totalForDate(dateStr) {
+    return entriesForDate(dateStr).reduce((s,e) => s + e.amount, 0);
+  }
+  function entriesForMonth(y, m) {
+    const prefix = y + '-' + String(m+1).padStart(2,'0');
+    return entries.filter(e => e.date.startsWith(prefix));
+  }
+
+  // ---------- Shell chrome (topbar avatar, drawer identity) ----------
+  function renderShellChrome() {
+    document.getElementById('topbar-avatar').textContent = profile.emoji;
+    document.getElementById('drawer-avatar').textContent = profile.emoji;
+    document.getElementById('drawer-name').textContent = profile.name || 'Your Ledger';
+    document.getElementById('drawer-subtitle').textContent = session ? session.email : 'View profile ›';
+    root.querySelectorAll('.drawer-item[data-goto]').forEach(el => {
+      el.classList.toggle('active', el.dataset.goto === currentPage);
+    });
+  }
+
+  // ---------- Navigation ----------
+  function goTo(page) {
+    if (page !== 'add' && currentPage !== 'add') returnPage = currentPage;
+    currentPage = page;
+    closeDrawer();
+    render();
+  }
+  function openAddEntry(dateStr) {
+    if (currentPage !== 'add') returnPage = currentPage;
+    addDraftDate = dateStr || selectedDate || fmtDate(today);
+    currentPage = 'add';
+    closeDrawer();
+    render();
+  }
+  navItems.forEach(btn => btn.addEventListener('click', () => goTo(btn.dataset.page)));
+  root.querySelectorAll('.drawer-item[data-goto]').forEach(btn => btn.addEventListener('click', () => goTo(btn.dataset.goto)));
+  document.getElementById('drawer-profile-btn').addEventListener('click', () => goTo('profile'));
+  document.getElementById('topbar-avatar').addEventListener('click', () => goTo('profile'));
+  fabAdd.addEventListener('click', () => openAddEntry());
+
+  function openDrawer() { drawer.classList.add('open'); drawerOverlay.classList.add('open'); }
+  function closeDrawer() { drawer.classList.remove('open'); drawerOverlay.classList.remove('open'); }
+  menuBtn.addEventListener('click', () => {
+    if (currentPage === 'add') goTo(returnPage);
+    else openDrawer();
+  });
+  drawerOverlay.addEventListener('click', closeDrawer);
+
+  document.getElementById('theme-switch').addEventListener('click', () => {
+    applyTheme(theme === 'light' ? 'dark' : 'light');
+  });
+
+  const TITLES = { calendar: 'Calendar', log: 'Spending Log', tracker: 'Expense Tracker', profile: 'Profile', add: 'Add Entry' };
+
+  function render() {
+    topbarTitle.textContent = TITLES[currentPage] || 'Daily Ledger';
+    navItems.forEach(el => el.classList.toggle('active', el.dataset.page === currentPage));
+    menuBtnIcon.innerHTML = currentPage === 'add' ? ICON_BACK : ICON_HAMBURGER;
+    fabAdd.classList.toggle('hidden', currentPage === 'add');
+    bottomNav.style.display = currentPage === 'add' ? 'none' : 'flex';
+    renderShellChrome();
+    pageContainer.scrollTop = 0;
+
+    if (currentPage === 'calendar') renderCalendarPage();
+    else if (currentPage === 'log') renderLogPage();
+    else if (currentPage === 'tracker') renderTrackerPage();
+    else if (currentPage === 'add') renderAddEntryPage();
+    else renderProfilePage();
+  }
+
+  // ---------- CALENDAR PAGE ----------
+  function renderCalendarPage() {
+    const monthEntries = entriesForMonth(viewYear, viewMonth);
+    const monthTotal = monthEntries.reduce((s,e) => s + e.amount, 0);
+
+    const firstDay = new Date(viewYear, viewMonth, 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    let dayCells = '';
+    for (let i = 0; i < startOffset; i++) dayCells += `<div class="day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = viewYear + '-' + String(viewMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const amt = totalForDate(dateStr);
+      const isToday = dateStr === fmtDate(today);
+      const isSelected = dateStr === selectedDate;
+      dayCells += `
+        <div class="day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" data-date="${dateStr}">
+          <div class="day-num">${d}</div>
+          ${amt > 0 ? `<div class="day-amt">${fmtMoney(amt)}</div>` : ''}
+        </div>`;
+    }
+
+    const dayEntries = entriesForDate(selectedDate);
+    const dayTotal = dayEntries.reduce((s,e) => s + e.amount, 0);
+    const selDateObj = new Date(selectedDate + 'T00:00:00');
+    const selLabel = selDateObj.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    pageContainer.innerHTML = `
+      <div class="card">
+        <div class="cal-head">
+          <button class="nav-btn" id="prev-month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="cal-month">${MONTHS[viewMonth]} ${viewYear}</div>
+          <button class="nav-btn" id="next-month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="month-total">This month: <b>${fmtMoney(monthTotal)}</b> across ${monthEntries.length} ${monthEntries.length === 1 ? 'entry' : 'entries'}</div>
+        <div class="grid-dow">${DOW.map(d => `<div class="dow">${d}</div>`).join('')}</div>
+        <div class="grid-days">${dayCells}</div>
+
+        <div class="day-panel">
+          <div class="day-panel-head">
+            <div class="day-panel-title">${selLabel}</div>
+            ${dayTotal > 0 ? `<div class="day-panel-total">${fmtMoney(dayTotal)}</div>` : ''}
+          </div>
+          <div id="day-entries">
+            ${dayEntries.length === 0
+              ? `<div class="empty-note">Nothing logged for this day yet.</div>`
+              : dayEntries.map(e => `
+                <div class="entry-row">
+                  <div class="entry-name">${escapeHtml(e.name)}</div>
+                  <div class="entry-amt">${fmtMoney(e.amount)}</div>
+                  <button class="entry-del" data-id="${e.id}" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg></button>
+                </div>`).join('')
+            }
+          </div>
+          <button class="add-btn" id="goto-add-entry" style="width:100%; text-align:center; align-self:stretch;">+ Add entry for this day</button>
+        </div>
+      </div>
+    `;
+
+    pageContainer.querySelector('#prev-month').addEventListener('click', () => {
+      viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      render();
+    });
+    pageContainer.querySelector('#next-month').addEventListener('click', () => {
+      viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      render();
+    });
+    pageContainer.querySelectorAll('.day:not(.empty)').forEach(el => {
+      el.addEventListener('click', () => { selectedDate = el.dataset.date; render(); });
+    });
+    pageContainer.querySelectorAll('.entry-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        entries = entries.filter(e => e.id !== btn.dataset.id);
+        await saveEntries();
+        render();
+      });
+    });
+    pageContainer.querySelector('#goto-add-entry').addEventListener('click', () => openAddEntry(selectedDate));
+  }
+
+  // ---------- ADD ENTRY PAGE ----------
+  function renderAddEntryPage() {
+    const dateVal = addDraftDate || fmtDate(today);
+    const dateObj = new Date(dateVal + 'T00:00:00');
+    const dateLabel = dateObj.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const todayStr = fmtDate(today);
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = fmtDate(yesterday);
+
+    pageContainer.innerHTML = `
+      <div class="page-heading">Add Entry</div>
+      <div class="page-sub">Log a new expense to your ledger.</div>
+
+      <div class="card">
+        <div class="add-page-field">
+          <div class="add-page-label">Date</div>
+          <div class="quick-date-row">
+            <button type="button" class="quick-date-opt ${dateVal === todayStr ? 'selected' : ''}" data-quick="${todayStr}">Today</button>
+            <button type="button" class="quick-date-opt ${dateVal === yesterdayStr ? 'selected' : ''}" data-quick="${yesterdayStr}">Yesterday</button>
+          </div>
+          <input type="date" id="add-date" value="${dateVal}" max="${todayStr}" />
+          <div class="save-hint" id="add-date-label">${dateLabel}</div>
+        </div>
+
+        <div class="add-page-field">
+          <div class="add-page-label">What was it for?</div>
+          <input type="text" id="add-name" placeholder="e.g. Groceries, Auto fare, Coffee" maxlength="60" />
+        </div>
+
+        <div class="add-page-field">
+          <div class="add-page-label">Amount</div>
+          <input type="number" id="add-amount" class="amt" placeholder="${profile.currency} amount" min="0" step="1" style="max-width:none;" />
+        </div>
+
+        <div class="add-page-error" id="add-error"></div>
+        <button class="add-page-save" id="add-save-btn" disabled>Save entry</button>
+      </div>
+    `;
+
+    const dateInput = pageContainer.querySelector('#add-date');
+    const nameInput = pageContainer.querySelector('#add-name');
+    const amtInput = pageContainer.querySelector('#add-amount');
+    const saveBtn = pageContainer.querySelector('#add-save-btn');
+    const errorEl = pageContainer.querySelector('#add-error');
+    const dateLabelEl = pageContainer.querySelector('#add-date-label');
+
+    nameInput.focus();
+
+    function refreshBtn() {
+      saveBtn.disabled = !(nameInput.value.trim() && amtInput.value && Number(amtInput.value) > 0 && dateInput.value);
+      errorEl.textContent = '';
+    }
+    function syncQuickButtons() {
+      pageContainer.querySelectorAll('.quick-date-opt').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.quick === dateInput.value);
+      });
+      const d = new Date(dateInput.value + 'T00:00:00');
+      dateLabelEl.textContent = isNaN(d) ? '' : d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    dateInput.addEventListener('change', () => { addDraftDate = dateInput.value; syncQuickButtons(); refreshBtn(); });
+    pageContainer.querySelectorAll('.quick-date-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        dateInput.value = btn.dataset.quick;
+        addDraftDate = btn.dataset.quick;
+        syncQuickButtons();
+        refreshBtn();
+      });
+    });
+    nameInput.addEventListener('input', refreshBtn);
+    amtInput.addEventListener('input', refreshBtn);
+    [nameInput, amtInput].forEach(inp => inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !saveBtn.disabled) saveBtn.click();
+    }));
+
+    saveBtn.addEventListener('click', async () => {
+      const name = nameInput.value.trim();
+      const amount = Number(amtInput.value);
+      const date = dateInput.value;
+      if (!name || !amount || amount <= 0 || !date) {
+        errorEl.textContent = 'Please fill in a date, description, and amount above zero.';
+        return;
+      }
+      entries.push({ id: uid(), date, amount, name, createdAt: Date.now() });
+      await saveEntries();
+      selectedDate = date;
+      viewYear = Number(date.slice(0,4));
+      viewMonth = Number(date.slice(5,7)) - 1;
+      goTo(returnPage === 'add' ? 'calendar' : returnPage);
+    });
+  }
+
+  // ---------- SPENDING LOG PAGE ----------
+  function renderLogPage() {
+    const filtered = entries
+      .filter(e => e.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a,b) => b.date.localeCompare(a.date) || (b.createdAt||0) - (a.createdAt||0));
+
+    let html = `
+      <div class="page-heading">Spending Log</div>
+      <div class="page-sub">Every entry, searchable, newest first.</div>
+      <div class="search-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search-input" placeholder="Search by what it was for…" value="${escapeHtml(searchTerm)}" />
+      </div>`;
+
+    if (entries.length === 0) {
+      html += `
+        <div class="empty-page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5M8 12h8M8 16h5"/></svg>
+          <div class="em-title">Nothing logged yet</div>
+          <div>Head to the Calendar tab and add your first entry.</div>
+        </div>`;
+      pageContainer.innerHTML = html;
+      bindSearch();
+      return;
+    }
+
+    const groups = {};
+    filtered.forEach(e => {
+      const key = e.date.slice(0,7);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+    const groupKeys = Object.keys(groups).sort().reverse();
+
+    if (groupKeys.length === 0) {
+      html += `<div class="empty-page"><div class="em-title">No matches</div><div>Try a different search term.</div></div>`;
+    } else {
+      groupKeys.forEach(key => {
+        const [y, m] = key.split('-');
+        const groupTotal = groups[key].reduce((s,e) => s + e.amount, 0);
+        html += `
+          <div class="month-group">
+            <div class="month-group-title">${MONTHS[Number(m)-1]} ${y} <span class="month-group-total">— ${fmtMoney(groupTotal)}</span></div>
+            ${groups[key].map(e => {
+              const d = new Date(e.date + 'T00:00:00');
+              return `
+              <div class="all-entry">
+                <div class="all-entry-left">
+                  <div class="all-entry-name">${escapeHtml(e.name)}</div>
+                  <div class="all-entry-date">${d.toLocaleDateString('en-IN',{ day:'numeric', month:'short', weekday:'short' })}</div>
+                </div>
+                <div class="all-entry-amt">${fmtMoney(e.amount)}</div>
+              </div>`;
+            }).join('')}
+          </div>`;
+      });
+    }
+
+    pageContainer.innerHTML = html;
+    bindSearch();
+
+    function bindSearch() {
+      const input = pageContainer.querySelector('#search-input');
+      if (input) {
+        input.addEventListener('input', () => {
+          searchTerm = input.value;
+          const pos = input.selectionStart;
+          renderLogPage();
+          const newInput = pageContainer.querySelector('#search-input');
+          if (newInput) { newInput.focus(); newInput.setSelectionRange(pos, pos); }
+        });
+      }
+    }
+  }
+
+  // ---------- EXPENSE TRACKER PAGE ----------
+  function renderTrackerPage() {
+    const monthEntries = entriesForMonth(viewYear, viewMonth);
+    const monthTotal = monthEntries.reduce((s,e) => s + e.amount, 0);
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const daysElapsed = (viewYear === today.getFullYear() && viewMonth === today.getMonth()) ? today.getDate() : daysInMonth;
+    const avgPerDay = daysElapsed > 0 ? monthTotal / daysElapsed : 0;
+
+    const byDay = {};
+    monthEntries.forEach(e => { byDay[e.date] = (byDay[e.date]||0) + e.amount; });
+    let biggestDay = null, biggestAmt = 0;
+    Object.entries(byDay).forEach(([d,a]) => { if (a > biggestAmt) { biggestAmt = a; biggestDay = d; } });
+
+    const byName = {};
+    monthEntries.forEach(e => {
+      const key = e.name.trim().toLowerCase();
+      if (!byName[key]) byName[key] = { name: e.name, total: 0, count: 0 };
+      byName[key].total += e.amount;
+      byName[key].count += 1;
+    });
+    const topNames = Object.values(byName).sort((a,b) => b.total - a.total).slice(0, 6);
+
+    const weekBuckets = [];
+    for (let start = 1; start <= daysInMonth; start += 7) {
+      const end = Math.min(start + 6, daysInMonth);
+      let total = 0;
+      for (let d = start; d <= end; d++) {
+        const ds = viewYear + '-' + String(viewMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        total += totalForDate(ds);
+      }
+      weekBuckets.push({ label: `${start}–${end}`, total });
+    }
+    const maxWeek = Math.max(1, ...weekBuckets.map(w => w.total));
+
+    const monthNav = `
+      <div class="cal-head" style="margin-bottom:6px;">
+        <button class="nav-btn" id="t-prev-month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="cal-month">${MONTHS[viewMonth]} ${viewYear}</div>
+        <button class="nav-btn" id="t-next-month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>`;
+
+    if (monthEntries.length === 0) {
+      pageContainer.innerHTML = `
+        <div class="page-heading">Expense Tracker</div>
+        <div class="page-sub">Trends and breakdowns for the month.</div>
+        ${monthNav}
+        <div class="empty-page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          <div class="em-title">No spending tracked this month</div>
+          <div>Log something on the Calendar tab to see the breakdown here.</div>
+        </div>`;
+      bindMonthNav();
+      return;
+    }
+
+    pageContainer.innerHTML = `
+      <div class="page-heading">Expense Tracker</div>
+      <div class="page-sub">Trends and breakdowns for the month.</div>
+      ${monthNav}
+
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-label">Total this month</div>
+          <div class="stat-value">${fmtMoney(monthTotal)}</div>
+        </div>
+        <div class="stat-box gold">
+          <div class="stat-label">Average / day</div>
+          <div class="stat-value">${fmtMoney(Math.round(avgPerDay))}</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box" style="min-width:100%;">
+          <div class="stat-label">Biggest day</div>
+          <div class="stat-value" style="font-size:16px;">${biggestDay ? new Date(biggestDay+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + ' · ' + fmtMoney(biggestAmt) : '—'}</div>
+        </div>
+      </div>
+
+      <div class="section-title">Spending by week</div>
+      ${weekBuckets.map(w => `
+        <div class="bar-row">
+          <div class="bar-label">${w.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(w.total/maxWeek*100).toFixed(1)}%"></div></div>
+          <div class="bar-amt">${fmtMoney(w.total)}</div>
+        </div>`).join('')}
+
+      <div class="section-title">Most spent on</div>
+      ${topNames.map((t, i) => `
+        <div class="top-item">
+          <div><span class="rank">${i+1}.</span>${escapeHtml(t.name)}${t.count > 1 ? ` <span style="color:var(--ink-soft);font-size:12px;">×${t.count}</span>` : ''}</div>
+          <div style="font-variant-numeric:tabular-nums;">${fmtMoney(t.total)}</div>
+        </div>`).join('')}
+    `;
+    bindMonthNav();
+
+    function bindMonthNav() {
+      pageContainer.querySelector('#t-prev-month').addEventListener('click', () => {
+        viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        render();
+      });
+      pageContainer.querySelector('#t-next-month').addEventListener('click', () => {
+        viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        render();
+      });
+    }
+  }
+
+  // ---------- PROFILE PAGE ----------
+  function renderProfilePage() {
+    const lifetimeTotal = entries.reduce((s,e) => s + e.amount, 0);
+    const monthTotal = entriesForMonth(today.getFullYear(), today.getMonth()).reduce((s,e) => s + e.amount, 0);
+    const firstEntry = entries.slice().sort((a,b) => a.date.localeCompare(b.date))[0];
+    const memberSince = firstEntry
+      ? new Date(firstEntry.date + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+      : '—';
+
+    pageContainer.innerHTML = `
+      <div class="profile-head">
+        <div class="profile-avatar-big" id="profile-avatar-big">${profile.emoji}</div>
+        <div class="avatar-hint">Tap an icon to change it</div>
+        <div class="emoji-row" id="emoji-row">
+          ${EMOJIS.map(em => `<button class="emoji-opt ${em === profile.emoji ? 'selected' : ''}" data-emoji="${em}">${em}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field-label">Signed in with Google</div>
+      <input type="text" value="${escapeHtml(session ? session.email : '')}" disabled style="opacity:.7;" />
+
+      <div class="field-label">Display name</div>
+      <input type="text" id="profile-name" value="${escapeHtml(profile.name)}" maxlength="30" placeholder="Your name" />
+
+      <div class="field-label">Currency</div>
+      <div class="currency-row" id="currency-row">
+        ${CURRENCIES.map(c => `<button class="currency-opt ${c === profile.currency ? 'selected' : ''}" data-currency="${c}">${c}</button>`).join('')}
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-box">
+          <div class="stat-label">Lifetime spent</div>
+          <div class="stat-value">${fmtMoney(lifetimeTotal)}</div>
+        </div>
+        <div class="stat-box gold">
+          <div class="stat-label">This month</div>
+          <div class="stat-value">${fmtMoney(monthTotal)}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Entries logged</div>
+          <div class="stat-value">${entries.length}</div>
+        </div>
+        <div class="stat-box gold">
+          <div class="stat-label">Member since</div>
+          <div class="stat-value" style="font-size:16px;">${memberSince}</div>
+        </div>
+      </div>
+
+      <button class="danger-btn" id="reset-btn">Clear all spending data</button>
+    `;
+
+    pageContainer.querySelectorAll('.emoji-opt').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        profile.emoji = btn.dataset.emoji;
+        await saveProfile();
+        render();
+      });
+    });
+    pageContainer.querySelectorAll('.currency-opt').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        profile.currency = btn.dataset.currency;
+        await saveProfile();
+        render();
+      });
+    });
+    const nameInput = pageContainer.querySelector('#profile-name');
+    let saveTimer = null;
+    nameInput.addEventListener('input', () => {
+      profile.name = nameInput.value;
+      document.getElementById('drawer-name').textContent = profile.name || 'Your Ledger';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveProfile, 400);
+    });
+    pageContainer.querySelector('#reset-btn').addEventListener('click', async () => {
+      if (confirm('This will permanently delete every logged entry. Continue?')) {
+        entries = [];
+        await saveEntries();
+        render();
+      }
+    });
+  }
+
+  loadAll();
+})();
+</script>
